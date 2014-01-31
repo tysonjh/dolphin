@@ -1,4 +1,4 @@
-import dolphin.QueryableConfig
+import dolphin.mutable.QueryableConfig
 
 /**
  * User: tyson.hamilton
