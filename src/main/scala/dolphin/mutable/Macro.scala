@@ -1,13 +1,13 @@
-package dolphin
+package dolphin.mutable
 
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
+import dolphin.QueryableConfig
 
 /**
- * Trait containing the flipper macro group. It can be mixed in or
- * imported.
+ * Object containing the flipper macros.
  */
-trait Dolphin {
+object Macro {
   /**
    * Macro that surrounds `fn` with an <code>if</code> construct that
    * branches based on the result of querying the `config` parameter.
@@ -17,7 +17,7 @@ trait Dolphin {
    * @return a Unit
    */
   def flipper[T](featureName: String, config: QueryableConfig)
-                (fn: => T): Unit = macro DolphinMacro.flipperImpl[T]
+                (fn: => T): Unit = macro MacroImpl.flipper[T]
 
   /**
    * Macro that surrounds `fn` with an <code>if</code> construct that
@@ -29,40 +29,26 @@ trait Dolphin {
    * @param default the default function to execute if feature is disabled
    * @return the result of calling `fn` or `default`
    */
-  def flipperOrDefault[T](featureName: String, config: QueryableConfig)
-                         (fn: => T)(default: => T): T = macro DolphinMacro.flipperOrDefaultImpl[T]
+  def flipperWithDefault[T](featureName: String, config: QueryableConfig)
+                           (fn: => T)(default: => T): T = macro MacroImpl.flipperWithDefault[T]
 }
 
-object DolphinMacro {
-  def flipperImpl[T](c: Context)
-                    (featureName: c.Expr[String],
-                     config: c.Expr[QueryableConfig])
-                    (fn: c.Expr[T]): c.Expr[Unit] = {
+object MacroImpl {
+  def flipper[T](c: Context)
+                (featureName: c.Expr[String],
+                 config: c.Expr[QueryableConfig])
+                (fn: c.Expr[T]): c.Expr[Unit] = {
     import c.universe._
-    val result = {
-      q"""
-        if($config.isFeatureOn($featureName)) {
-          $fn
-        } else {}
-      """
-    }
+    val result = q"if($config.isFeatureOn($featureName)) $fn else {}"
     c.Expr[Unit](result)
   }
 
-  def flipperOrDefaultImpl[T](c: Context)
-                             (featureName: c.Expr[String],
-                              config: c.Expr[QueryableConfig])
-                             (fn: c.Expr[T])(default: c.Expr[T]) = {
+  def flipperWithDefault[T](c: Context)
+                           (featureName: c.Expr[String],
+                            config: c.Expr[QueryableConfig])
+                           (fn: c.Expr[T])(default: c.Expr[T]) = {
     import c.universe._
-    val result = {
-      q"""
-        if($config.isFeatureOn($featureName)) {
-          $fn
-        } else {
-          $default
-        }
-      """
-    }
+    val result = q"if($config.isFeatureOn($featureName)) $fn else $default"
     c.Expr[T](result)
   }
 }
