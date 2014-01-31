@@ -1,4 +1,4 @@
-import dolphin.mutable.QueryableConfig
+import dolphin.{VersionableConfig, QueryableConfig}
 
 /**
  * User: tyson.hamilton
@@ -11,15 +11,26 @@ package object test {
     def toggleFeature { _isOn = !_isOn }
   }
 
+  class MutableVersionNumber(initFeatureMap: Map[String, Option[Double]]) extends VersionableConfig[Double] {
+    var _curFeatureMap: Map[String, Option[Double]] = initFeatureMap
+    def changeFeatureVersion(name: String, version: Option[Double]) {
+      _curFeatureMap = _curFeatureMap ++ Map(name -> version)
+    }
+    def getEnabledFeatureVersion(name: String): Option[Double] = _curFeatureMap.get(name).flatten
+  }
+
   def featureAlwaysOnConfig = new QueryableConfig {
-    def isFeatureOn(name: String): Boolean = true
+    def isFeatureEnabled(name: String): Boolean = true
   }
 
   def featureAlwaysOffConfig = new QueryableConfig {
-    def isFeatureOn(name: String): Boolean = false
+    def isFeatureEnabled(name: String): Boolean = false
   }
 
   def mutableConfig(isOn: Boolean) = new MutableFeatureFlag(isOn) with QueryableConfig {
-    def isFeatureOn(name: String): Boolean = _isOn
+    def isFeatureEnabled(name: String): Boolean = _isOn
   }
+
+  def featuresByNameWithVersion(features: Map[String, Option[Double]]): MutableVersionNumber =
+    new MutableVersionNumber(features)
 }
