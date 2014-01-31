@@ -2,7 +2,6 @@ package dolphin.mutable
 
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
-import dolphin.QueryableConfig
 
 /**
  * Object containing the flipper macros.

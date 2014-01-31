@@ -1,6 +1,5 @@
 package dolphin.mutable
 
-import dolphin.QueryableConfig
 import org.scalatest.FunSpec
 
 class DolphinSpec extends FunSpec {
